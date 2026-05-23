@@ -7,6 +7,12 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <script>
+    // Sjekk innlogging – send til login.html hvis ikke innlogget
+    if (!sessionStorage.getItem('nop_innlogget')) {
+      window.location.href = 'login.html';
+    }
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -19,6 +25,10 @@
         <h1>Norske Offiserers Pistolklubb</h1>
         <p class="subtitle">Organisert treningslogg</p>
       </div>
+      <div class="header-bruker">
+        <span id="header-navn"></span>
+        <button id="btn-logg-ut" onclick="loggUt()">Logg ut</button>
+      </div>
     </div>
   </header>
 
@@ -28,8 +38,8 @@
       <!-- Søknadstype-knapper -->
       <div class="soknadstype-gruppe">
         <span class="soknadstype-label">Søknadstype:</span>
-        <button id="btn-handvaapen" class="btn-soknad">🔫 Håndvåpensøknad (6 mnd)</button>
-        <button id="btn-rifle" class="btn-soknad">🎯 Riflesøknad (24 mnd)</button>
+        <button id="btn-handvaapen" class="btn-soknad">🔫 Håndvåpensøknad</button>
+        <button id="btn-rifle" class="btn-soknad">🎯 Riflesøknad</button>
         <button id="btn-alle" class="btn-soknad aktiv">Vis alle</button>
       </div>
 
@@ -149,3 +159,17 @@
   <script src="script.js"></script>
 </body>
 </html>
+<script>
+  // Vis brukernavn i header
+  document.addEventListener('DOMContentLoaded', () => {
+    const bruker = sessionStorage.getItem('nop_bruker') || '';
+    const el = document.getElementById('header-navn');
+    if (el) el.textContent = bruker;
+  });
+
+  function loggUt() {
+    sessionStorage.removeItem('nop_innlogget');
+    sessionStorage.removeItem('nop_bruker');
+    window.location.href = 'login.html';
+  }
+</script>

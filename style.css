@@ -427,3 +427,38 @@ footer {
   .filter-grid { grid-template-columns: 1fr; }
   .logo { width: 56px; height: 56px; }
 }
+
+/* ── Header bruker / logg ut ─────────────── */
+.header-bruker {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#header-navn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  color: #c8c4bc;
+  letter-spacing: 0.04em;
+}
+
+#btn-logg-ut {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 7px 14px;
+  background: transparent;
+  color: #c8c4bc;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+#btn-logg-ut:hover {
+  background: #333;
+  color: #f5f4f0;
+  border-color: #666;
+}

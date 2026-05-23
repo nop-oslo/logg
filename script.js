@@ -93,12 +93,35 @@ async function hentData() {
   }
 }
 
-// ── Parse norsk dato "05.04.2025 kl. 14.27.27" ────────────────
-// Bruker lokal tid (år, måned-1, dag) for å unngå UTC-forskyvning
+// ── Parse dato – støtter både norsk og ISO-format ────────────
+// Norsk: "05.04.2025 kl. 14.27.27"
+// ISO:   "2022-02-12T11:51:02.000Z"
 function parseDato(str) {
-  const match = str.match(/(\d{2})\.(\d{2})\.(\d{4})/);
-  if (!match) return null;
-  return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+  if (!str) return null;
+  // Norsk format: DD.MM.YYYY
+  const norsk = str.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+  if (norsk) {
+    return new Date(parseInt(norsk[3]), parseInt(norsk[2]) - 1, parseInt(norsk[1]));
+  }
+  // ISO format: YYYY-MM-DD...
+  const iso = str.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) {
+    return new Date(parseInt(iso[1]), parseInt(iso[2]) - 1, parseInt(iso[3]));
+  }
+  return null;
+}
+
+// ── Formater dato til norsk visning ───────────────────────────
+function formaterDato(str) {
+  if (!str) return '';
+  // Allerede norsk format
+  if (str.match(/^\d{2}\.\d{2}\.\d{4}/)) return str;
+  // ISO format – konverter til DD.MM.YYYY HH:MM
+  const iso = str.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (iso) {
+    return `${iso[3]}.${iso[2]}.${iso[1]} kl. ${iso[4]}.${iso[5]}`;
+  }
+  return str;
 }
 
 // Konverter YYYY-MM-DD streng til lokal midnatt
@@ -200,7 +223,7 @@ function renderTabell() {
   filtrerteRader.forEach(r => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${r.tidsmerke}</td>
+      <td>${formaterDato(r.tidsmerke)}</td>
       <td>${r.fornavn}</td>
       <td>${r.etternavn}</td>
       <td>${r.ansvarlig}</td>
@@ -366,7 +389,7 @@ async function genererPDF() {
   // ── Tabell ──
   const kolonner = ['Tidsmerke', 'Fornavn', 'Etternavn', 'Ansvarlig skytebaneleder', 'Skytebane'];
   const rader = filtrerteRader.map(r => [
-    r.tidsmerke, r.fornavn, r.etternavn, r.ansvarlig, r.bane,
+    formaterDato(r.tidsmerke), r.fornavn, r.etternavn, r.ansvarlig, r.bane,
   ]);
 
   doc.autoTable({

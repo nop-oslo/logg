@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOP – Innlogging</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: #111;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-boks {
+      background: #f5f4f0;
+      border-radius: 6px;
+      padding: 48px 48px 40px;
+      width: 380px;
+      max-width: 94vw;
+      box-shadow: 0 16px 60px rgba(0,0,0,0.5);
+    }
+
+    .login-logo {
+      display: block;
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      object-fit: contain;
+    }
+
+    .login-tittel {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: center;
+      color: #555;
+      margin-bottom: 32px;
+    }
+
+    .login-felt {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .login-felt label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #555;
+    }
+
+    .login-felt input {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 0.95rem;
+      padding: 11px 14px;
+      border: 1.5px solid #e8e6e0;
+      border-radius: 4px;
+      background: white;
+      color: #111;
+      transition: border-color 0.15s;
+    }
+
+    .login-felt input:focus {
+      outline: none;
+      border-color: #111;
+    }
+
+    .login-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      width: 100%;
+      padding: 12px;
+      background: #111;
+      color: #f5f4f0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.15s;
+    }
+
+    .login-btn:hover { background: #333; }
+
+    .feil-melding {
+      display: none;
+      background: #fee;
+      border: 1px solid #fcc;
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: #c00;
+      margin-top: 14px;
+      text-align: center;
+    }
+
+    .feil-melding.synlig { display: block; }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 0.72rem;
+      color: #aaa;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-boks">
+    <img src="NOP_Logo.png" alt="NOP Logo" class="login-logo" />
+    <p class="login-tittel">Norske Offiserers Pistolklubb<br>Treningslogg – innlogging</p>
+
+    <div class="login-felt">
+      <label for="brukernavn">Brukernavn</label>
+      <input type="text" id="brukernavn" autocomplete="username" placeholder="Fornavn" />
+    </div>
+    <div class="login-felt">
+      <label for="passord">Passord</label>
+      <input type="password" id="passord" autocomplete="current-password" placeholder="••••••••" />
+    </div>
+
+    <button class="login-btn" id="login-btn">Logg inn</button>
+    <div class="feil-melding" id="feil-melding">Feil brukernavn eller passord.</div>
+
+    <p class="login-footer">NOP – Kun for styremedlemmer</p>
+  </div>
+
+  <script>
+    const BRUKERE = [
+      { brukernavn: 'Tormod',  passord: 'NOPTormod'  },
+      { brukernavn: 'Thor',    passord: 'NOPThor'    },
+      { brukernavn: 'Øivind',  passord: 'NOPØivind'  },
+      { brukernavn: 'Geir',    passord: 'NOPGeir'    },
+      { brukernavn: 'Sondre',  passord: 'NOPSondre'  },
+      { brukernavn: 'Kjetil',  passord: 'NOPKjetil'  },
+      { brukernavn: 'Espen',   passord: 'NOPEspen'   },
+      { brukernavn: 'Jens',    passord: 'NOPJens'    },
+      { brukernavn: 'Arne',    passord: 'NOPArne'    },
+    ];
+
+    function loggInn() {
+      const bNavn = document.getElementById('brukernavn').value.trim();
+      const bPass = document.getElementById('passord').value;
+      const feil  = document.getElementById('feil-melding');
+
+      const treff = BRUKERE.find(u =>
+        u.brukernavn.toLowerCase() === bNavn.toLowerCase() && u.passord === bPass
+      );
+
+      if (treff) {
+        sessionStorage.setItem('nop_innlogget', '1');
+        sessionStorage.setItem('nop_bruker', treff.brukernavn);
+        window.location.href = 'index.html';
+      } else {
+        feil.classList.add('synlig');
+        document.getElementById('passord').value = '';
+        document.getElementById('passord').focus();
+      }
+    }
+
+    document.getElementById('login-btn').addEventListener('click', loggInn);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') loggInn();
+    });
+  </script>
+</body>
+</html>
