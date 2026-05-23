@@ -40,7 +40,7 @@ const tabellSeksjon = document.getElementById('tabell-seksjon');
 const tabellBody    = document.getElementById('tabell-body');
 
 const pdfModal      = document.getElementById('pdf-modal');
-const pdfSignatar   = document.getElementById('pdf-signatar');
+const pdfSignatur   = document.getElementById('pdf-signatur');
 const pdfNavn       = document.getElementById('pdf-navn');
 const pdfTittel     = document.getElementById('pdf-tittel');
 const pdfTlf        = document.getElementById('pdf-tlf');
@@ -292,8 +292,8 @@ function bindListeners() {
   pdfModal.addEventListener('click', e => { if (e.target === pdfModal) pdfModal.style.display = 'none'; });
 
   // Signatar-dropdown fyller feltene automatisk
-  pdfSignatar.addEventListener('change', () => {
-    const idx = pdfSignatar.value;
+  pdfSignatur.addEventListener('change', () => {
+    const idx = pdfSignatur.value;
     if (idx === '') {
       pdfNavn.value = '';
       pdfTittel.value = '';
