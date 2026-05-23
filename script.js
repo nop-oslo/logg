@@ -351,7 +351,7 @@ async function genererPDF() {
 
   // ── Logo ──
   if (logoBase64) {
-    doc.addImage(logoBase64, 'PNG', 14, 8, 24, 24);
+    doc.addImage(logoBase64, 'JPEG', 14, 8, 24, 24);
   }
 
   // ── Tittel ──
@@ -433,17 +433,27 @@ async function genererPDF() {
   btnGenererPdf.innerHTML = 'Generer PDF';
 }
 
-// ── Logo til base64 ────────────────────────────────────────────
+// ── Logo til base64 – skalert og komprimert ───────────────────
 function hentLogoBase64() {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
+      // Skaler ned til maks 120px for å holde PDF-størrelsen liten
+      const MAX = 120;
+      const scale = Math.min(MAX / img.width, MAX / img.height, 1);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      resolve(canvas.toDataURL('image/png'));
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      // Hvit bakgrunn (unngår transparent PNG-overhead)
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      // JPEG med 80% kvalitet – dramatisk mindre enn PNG
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
     };
     img.onerror = () => resolve(null);
     img.src = 'NOP_Logo.png';
