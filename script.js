@@ -94,21 +94,42 @@ async function hentData() {
 }
 
 // ── Parse norsk dato "05.04.2025 kl. 14.27.27" ────────────────
+// Bruker lokal tid (år, måned-1, dag) for å unngå UTC-forskyvning
 function parseDato(str) {
   const match = str.match(/(\d{2})\.(\d{2})\.(\d{4})/);
   if (!match) return null;
-  return new Date(`${match[3]}-${match[2]}-${match[1]}`);
+  return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+}
+
+// Konverter YYYY-MM-DD streng til lokal midnatt
+function datoFraInput(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+// Konverter YYYY-MM-DD streng til lokal slutt av dag
+function datoTilSluttAvDag(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d, 23, 59, 59, 999);
 }
 
 // ── Datogrense for søknadstype ─────────────────────────────────
-function settSoknadsDatoer(maneder) {
+function settSoknadsDatoer(dager) {
   const til = new Date();
   const fra = new Date();
-  fra.setMonth(fra.getMonth() - maneder);
-  filterFra.value = fra.toISOString().split('T')[0];
-  filterTil.value = til.toISOString().split('T')[0];
+  fra.setDate(fra.getDate() - dager);
+  // Formater som YYYY-MM-DD i lokal tid
+  filterFra.value = lokalDatoStreng(fra);
+  filterTil.value = lokalDatoStreng(til);
   filterFra.disabled = true;
   filterTil.disabled = true;
+}
+
+function lokalDatoStreng(dato) {
+  const y = dato.getFullYear();
+  const m = String(dato.getMonth() + 1).padStart(2, '0');
+  const d = String(dato.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 function frigjorDatoer() {
@@ -140,8 +161,8 @@ function filtrerOgVis() {
   const navn   = searchNavn.value.trim().toLowerCase();
   const bane   = filterBane.value;
   const vaapen = filterVaapen.value;
-  const fra    = filterFra.value ? new Date(filterFra.value) : null;
-  const til    = filterTil.value ? new Date(filterTil.value + 'T23:59:59') : null;
+  const fra    = filterFra.value ? datoFraInput(filterFra.value) : null;
+  const til    = filterTil.value ? datoTilSluttAvDag(filterTil.value) : null;
 
   filtrerteRader = alleRader.filter(r => {
     if (navn) {
@@ -209,7 +230,7 @@ function bindListeners() {
   btnHandvaapen.addEventListener('click', () => {
     aktivSoknad = 'handvaapen';
     filterVaapen.value = '';
-    settSoknadsDatoer(6);
+    settSoknadsDatoer(179);
     oppdaterSoknadKnapper();
     filtrerOgVis();
   });
@@ -217,7 +238,7 @@ function bindListeners() {
   btnRifle.addEventListener('click', () => {
     aktivSoknad = 'rifle';
     filterVaapen.value = '';
-    settSoknadsDatoer(24);
+    settSoknadsDatoer(729);
     oppdaterSoknadKnapper();
     filtrerOgVis();
   });
