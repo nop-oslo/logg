@@ -1,108 +1,147 @@
 // =============================================================
 //  NOP Treningslogg – script.js
-//  Erstatt APPS_SCRIPT_URL med URL-en til ditt Google Apps Script
 // =============================================================
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwlvT2OGBj8GsT_RAPH-51bW3T_NGlO5Rk2qCkbk5nLCr0jjVU-cgr0eVf8aHxk5Bi-/exec';
 
-// ── State ─────────────────────────────────────────────────────
+// ── Signatarer ─────────────────────────────────────────────────
+const SIGNATARER = [
+  { rolle: 'Leder',                            navn: 'Fenr. Tormod Strand',      tlf: '95048911', epost: null },
+  { rolle: 'Nestleder',                         navn: 'Lt. Thor Grannæs',         tlf: '90082064', epost: null },
+  { rolle: 'Sekretær',                          navn: 'Øivind Brekke',            tlf: '99439145', epost: null },
+  { rolle: 'Kasserer',                          navn: 'Fenr. Geir Herdal',        tlf: '97182164', epost: null },
+  { rolle: 'Banemester',                        navn: 'Sondre Nervold',           tlf: '91517423', epost: null },
+  { rolle: '1. Styremedlem / Seremonimester',   navn: 'Kapt. Kjetil Edvardsen',  tlf: '90787587', epost: null },
+  { rolle: 'Oppmann Militær',                   navn: 'Lt. Thor Grannæs',         tlf: '90082064', epost: 'militar@nop.no' },
+  { rolle: 'Oppmann Dynamisk',                  navn: 'Oblt. Espen Fiskebeck',    tlf: '48245691', epost: 'dynamisk@nop.no' },
+  { rolle: 'Oppmann Svartkrutt',                navn: 'Kapt. Arne Thorvaldsen',   tlf: '91758767', epost: 'svartkrutt@nop.no' },
+];
+
+// Våpengrupper
+const HANDVAAPEN  = ['Pistol', 'Revolver', 'PCC'];
+const RIFLE       = ['Rifle'];
+
+// ── State ──────────────────────────────────────────────────────
 let alleRader = [];
 let filtrerteRader = [];
+let aktivSoknad = 'alle'; // 'alle' | 'handvaapen' | 'rifle'
 
-// ── DOM-referanser ─────────────────────────────────────────────
-const searchNavn   = document.getElementById('search-navn');
-const filterBane   = document.getElementById('filter-bane');
-const filterFra    = document.getElementById('filter-fra');
-const filterTil    = document.getElementById('filter-til');
-const btnNullstill = document.getElementById('btn-nullstill');
-const btnPdf       = document.getElementById('btn-pdf');
-const treffInfo    = document.getElementById('treff-info');
-const statusDiv    = document.getElementById('status-melding');
+// ── DOM ────────────────────────────────────────────────────────
+const searchNavn    = document.getElementById('search-navn');
+const filterBane    = document.getElementById('filter-bane');
+const filterVaapen  = document.getElementById('filter-vaapen');
+const filterFra     = document.getElementById('filter-fra');
+const filterTil     = document.getElementById('filter-til');
+const btnNullstill  = document.getElementById('btn-nullstill');
+const btnPdf        = document.getElementById('btn-pdf');
+const treffInfo     = document.getElementById('treff-info');
+const statusDiv     = document.getElementById('status-melding');
 const tabellSeksjon = document.getElementById('tabell-seksjon');
-const tabellBody   = document.getElementById('tabell-body');
+const tabellBody    = document.getElementById('tabell-body');
 
-const pdfModal     = document.getElementById('pdf-modal');
-const btnAvbryt    = document.getElementById('btn-avbryt');
+const pdfModal      = document.getElementById('pdf-modal');
+const pdfSignatar   = document.getElementById('pdf-signatar');
+const pdfNavn       = document.getElementById('pdf-navn');
+const pdfTittel     = document.getElementById('pdf-tittel');
+const pdfTlf        = document.getElementById('pdf-tlf');
+const pdfEpost      = document.getElementById('pdf-epost');
+const pdfEpostGruppe= document.getElementById('pdf-epost-gruppe');
+const pdfDato       = document.getElementById('pdf-dato');
+const btnAvbryt     = document.getElementById('btn-avbryt');
 const btnGenererPdf = document.getElementById('btn-generer-pdf');
-const pdfNavn      = document.getElementById('pdf-navn');
-const pdfTittel    = document.getElementById('pdf-tittel');
-const pdfDato      = document.getElementById('pdf-dato');
+
+const btnHandvaapen = document.getElementById('btn-handvaapen');
+const btnRifle      = document.getElementById('btn-rifle');
+const btnAlle       = document.getElementById('btn-alle');
 
 // ── Init ───────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  // Set dagens dato som standard i modal
   pdfDato.value = new Date().toISOString().split('T')[0];
   hentData();
   bindListeners();
 });
 
-// ── Hent data fra Apps Script ──────────────────────────────────
+// ── Hent data ──────────────────────────────────────────────────
 async function hentData() {
   try {
     const res = await fetch(APPS_SCRIPT_URL);
     const json = await res.json();
-
-    // Apps Script returner rader (array of arrays) eller objekter
-    // Tilpass etter hva ditt script returnerer
     const rader = json.data || json;
 
-    // Kolonner i ny sheet (1QLZC7jBkMIgxeAyY7DIpzVwcPhWMp_re7fxUJT2LSQ0):
-    // A=0 Tidsmerke, B=1 Fornavn, C=2 Etternavn, D=3 Treningsform,
-    // E=4 Ansvarlig skytebaneleder, F=5 Skytebane, G=6 Våpen,
-    // H=7 Kaliber, I=8 Antall skudd, J=9 Andre momenter
     alleRader = rader.map(r => ({
-      tidsmerke:    r[0] || '',
-      fornavn:      r[1] || '',
-      etternavn:    r[2] || '',
-      treningsform: r[3] || '',
-      ansvarlig:    r[4] || '',
-      bane:         r[5] || '',
-      vaapen:       r[6] || '',
-      kaliber:      r[7] || '',
-      antallSkudd:  r[8] || '',
-      andreMomenter:r[9] || '',
-      // Parsed date for filtering
-      dato:         parseDato(r[0] || ''),
+      tidsmerke:     r[0] || '',
+      fornavn:       r[1] || '',
+      etternavn:     r[2] || '',
+      treningsform:  r[3] || '',
+      ansvarlig:     r[4] || '',
+      bane:          r[5] || '',
+      vaapen:        r[6] || '',
+      kaliber:       r[7] || '',
+      antallSkudd:   r[8] || '',
+      andreMomenter: r[9] || '',
+      dato:          parseDato(r[0] || ''),
     }));
 
     byggBaneFilter();
+    byggVaapenFilter();
     filtrerOgVis();
     statusDiv.style.display = 'none';
     tabellSeksjon.style.display = '';
-
   } catch (err) {
-    statusDiv.innerHTML = `
-      <span style="color:#c00;">⚠ Kunne ikke laste data.<br>
-      Sjekk at APPS_SCRIPT_URL er satt riktig i script.js.</span>
-    `;
+    statusDiv.innerHTML = `<span style="color:#c00;">⚠ Kunne ikke laste data. Sjekk at APPS_SCRIPT_URL er korrekt.</span>`;
     console.error(err);
   }
 }
 
-// ── Parse norsk dato-format: "05.04.2025 kl. 14.27.27" ─────────
+// ── Parse norsk dato "05.04.2025 kl. 14.27.27" ────────────────
 function parseDato(str) {
   const match = str.match(/(\d{2})\.(\d{2})\.(\d{4})/);
   if (!match) return null;
   return new Date(`${match[3]}-${match[2]}-${match[1]}`);
 }
 
-// ── Bygg bane-filter dynamisk ──────────────────────────────────
+// ── Datogrense for søknadstype ─────────────────────────────────
+function settSoknadsDatoer(maneder) {
+  const til = new Date();
+  const fra = new Date();
+  fra.setMonth(fra.getMonth() - maneder);
+  filterFra.value = fra.toISOString().split('T')[0];
+  filterTil.value = til.toISOString().split('T')[0];
+  filterFra.disabled = true;
+  filterTil.disabled = true;
+}
+
+function frigjorDatoer() {
+  filterFra.disabled = false;
+  filterTil.disabled = false;
+}
+
+// ── Bygg dynamiske filter ──────────────────────────────────────
 function byggBaneFilter() {
   const baner = [...new Set(alleRader.map(r => r.bane).filter(Boolean))].sort();
   baner.forEach(b => {
     const opt = document.createElement('option');
-    opt.value = b;
-    opt.textContent = b;
+    opt.value = b; opt.textContent = b;
     filterBane.appendChild(opt);
+  });
+}
+
+function byggVaapenFilter() {
+  const vaapen = [...new Set(alleRader.map(r => r.vaapen).filter(Boolean))].sort();
+  vaapen.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    filterVaapen.appendChild(opt);
   });
 }
 
 // ── Filter + visning ───────────────────────────────────────────
 function filtrerOgVis() {
-  const navn = searchNavn.value.trim().toLowerCase();
-  const bane = filterBane.value;
-  const fra  = filterFra.value ? new Date(filterFra.value) : null;
-  const til  = filterTil.value ? new Date(filterTil.value + 'T23:59:59') : null;
+  const navn   = searchNavn.value.trim().toLowerCase();
+  const bane   = filterBane.value;
+  const vaapen = filterVaapen.value;
+  const fra    = filterFra.value ? new Date(filterFra.value) : null;
+  const til    = filterTil.value ? new Date(filterTil.value + 'T23:59:59') : null;
 
   filtrerteRader = alleRader.filter(r => {
     if (navn) {
@@ -110,6 +149,18 @@ function filtrerOgVis() {
       if (!fulltNavn.includes(navn)) return false;
     }
     if (bane && r.bane !== bane) return false;
+    if (vaapen && r.vaapen !== vaapen) return false;
+
+    // Søknadstype-filter på våpengruppe
+    if (aktivSoknad === 'handvaapen') {
+      const v = (r.vaapen || '').trim();
+      if (!HANDVAAPEN.some(h => v.toLowerCase().includes(h.toLowerCase()))) return false;
+    }
+    if (aktivSoknad === 'rifle') {
+      const v = (r.vaapen || '').trim();
+      if (!RIFLE.some(rf => v.toLowerCase().includes(rf.toLowerCase()))) return false;
+    }
+
     if (fra && r.dato && r.dato < fra) return false;
     if (til && r.dato && r.dato > til) return false;
     return true;
@@ -119,17 +170,12 @@ function filtrerOgVis() {
   oppdaterTreffInfo();
 }
 
-// ── Render tabell ──────────────────────────────────────────────
 function renderTabell() {
   tabellBody.innerHTML = '';
-
   if (filtrerteRader.length === 0) {
-    tabellBody.innerHTML = `
-      <tr><td colspan="9" class="ingen-treff">Ingen treff med gjeldende filter.</td></tr>
-    `;
+    tabellBody.innerHTML = `<tr><td colspan="9" class="ingen-treff">Ingen treff med gjeldende filter.</td></tr>`;
     return;
   }
-
   filtrerteRader.forEach(r => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -155,30 +201,83 @@ function oppdaterTreffInfo() {
 function bindListeners() {
   searchNavn.addEventListener('input', filtrerOgVis);
   filterBane.addEventListener('change', filtrerOgVis);
+  filterVaapen.addEventListener('change', filtrerOgVis);
   filterFra.addEventListener('change', filtrerOgVis);
   filterTil.addEventListener('change', filtrerOgVis);
+
+  // Søknadstype-knapper
+  btnHandvaapen.addEventListener('click', () => {
+    aktivSoknad = 'handvaapen';
+    filterVaapen.value = '';
+    settSoknadsDatoer(6);
+    oppdaterSoknadKnapper();
+    filtrerOgVis();
+  });
+
+  btnRifle.addEventListener('click', () => {
+    aktivSoknad = 'rifle';
+    filterVaapen.value = '';
+    settSoknadsDatoer(24);
+    oppdaterSoknadKnapper();
+    filtrerOgVis();
+  });
+
+  btnAlle.addEventListener('click', () => {
+    aktivSoknad = 'alle';
+    frigjorDatoer();
+    filterFra.value = '';
+    filterTil.value = '';
+    oppdaterSoknadKnapper();
+    filtrerOgVis();
+  });
 
   btnNullstill.addEventListener('click', () => {
     searchNavn.value = '';
     filterBane.value = '';
+    filterVaapen.value = '';
     filterFra.value = '';
     filterTil.value = '';
+    aktivSoknad = 'alle';
+    frigjorDatoer();
+    oppdaterSoknadKnapper();
     filtrerOgVis();
   });
 
-  btnPdf.addEventListener('click', () => {
-    pdfModal.style.display = 'flex';
-  });
+  btnPdf.addEventListener('click', () => { pdfModal.style.display = 'flex'; });
+  btnAvbryt.addEventListener('click', () => { pdfModal.style.display = 'none'; });
+  pdfModal.addEventListener('click', e => { if (e.target === pdfModal) pdfModal.style.display = 'none'; });
 
-  btnAvbryt.addEventListener('click', () => {
-    pdfModal.style.display = 'none';
-  });
-
-  pdfModal.addEventListener('click', e => {
-    if (e.target === pdfModal) pdfModal.style.display = 'none';
+  // Signatar-dropdown fyller feltene automatisk
+  pdfSignatar.addEventListener('change', () => {
+    const idx = pdfSignatar.value;
+    if (idx === '') {
+      pdfNavn.value = '';
+      pdfTittel.value = '';
+      pdfTlf.value = '';
+      pdfEpost.value = '';
+      pdfEpostGruppe.style.display = 'none';
+      return;
+    }
+    const s = SIGNATARER[parseInt(idx)];
+    pdfNavn.value   = s.navn;
+    pdfTittel.value = s.rolle;
+    pdfTlf.value    = s.tlf;
+    if (s.epost) {
+      pdfEpost.value = s.epost;
+      pdfEpostGruppe.style.display = '';
+    } else {
+      pdfEpost.value = '';
+      pdfEpostGruppe.style.display = 'none';
+    }
   });
 
   btnGenererPdf.addEventListener('click', genererPDF);
+}
+
+function oppdaterSoknadKnapper() {
+  btnHandvaapen.classList.toggle('aktiv', aktivSoknad === 'handvaapen');
+  btnRifle.classList.toggle('aktiv', aktivSoknad === 'rifle');
+  btnAlle.classList.toggle('aktiv', aktivSoknad === 'alle');
 }
 
 // ── PDF-generering ─────────────────────────────────────────────
@@ -186,8 +285,10 @@ async function genererPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-  const signNavn   = pdfNavn.value.trim()   || 'Navn';
-  const signTittel = pdfTittel.value.trim() || 'Tittel';
+  const signNavn   = pdfNavn.value.trim()   || '—';
+  const signTittel = pdfTittel.value.trim() || '—';
+  const signTlf    = pdfTlf.value.trim();
+  const signEpost  = pdfEpost.value.trim();
   const signDato   = pdfDato.value
     ? new Date(pdfDato.value).toLocaleDateString('nb-NO')
     : new Date().toLocaleDateString('nb-NO');
@@ -195,93 +296,89 @@ async function genererPDF() {
   const sideW = doc.internal.pageSize.getWidth();
   const sideH = doc.internal.pageSize.getHeight();
 
-  // ── Øverst: logo + tittel ──
-  // Last inn logo som base64
   const logoBase64 = await hentLogoBase64();
 
+  // ── Logo ──
   if (logoBase64) {
-    doc.addImage(logoBase64, 'PNG', 14, 10, 22, 22);
+    doc.addImage(logoBase64, 'PNG', 14, 8, 24, 24);
   }
 
+  // ── Tittel ──
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
-  doc.text('Organisert treningslogg NOP (Svar)', logoBase64 ? 40 : 14, 18);
+  doc.text('Organisert treningslogg NOP (Svar)', 42, 17);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.text('Godkjent av NOP', logoBase64 ? 40 : 14, 25);
+  doc.setTextColor(80);
+  doc.text('Godkjent av NOP', 42, 24);
+  doc.setTextColor(0);
 
-  // ── Linje ──
+  // ── Horisontal linje ──
   doc.setDrawColor(180);
   doc.setLineWidth(0.3);
-  doc.line(14, 34, sideW - 14, 34);
+  doc.line(14, 35, sideW - 14, 35);
 
-  // ── Godkjenner-info ──
+  // ── Godkjenner-tekst ──
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text('Oversikt over organisert trening som bekreftes og godkjennes av NOP', 14, 41);
+  doc.text('Oversikt over organisert trening som bekreftes og godkjennes av NOP', 14, 42);
 
-  doc.setFont('helvetica', 'bold');
-  doc.text(signNavn, 14, 50);
-  doc.setFont('helvetica', 'normal');
-  doc.text(signTittel, 14, 55);
-  doc.text(signDato, 14, 60);
-
-  // Signaturlinje
-  doc.setDrawColor(80);
+  // ── Signaturlinje (med luft over navnet) ──
+  doc.setDrawColor(60);
   doc.setLineWidth(0.5);
-  doc.line(14, 48, 80, 48);
+  doc.line(14, 52, 90, 52);
+
+  // Navn starter 6mm under streken
+  let y = 60;
+  doc.setFont('helvetica', 'bold');
+  doc.text(signNavn, 14, y);
+
+  doc.setFont('helvetica', 'normal');
+  y += 5;
+  doc.text(signTittel, 14, y);
+  y += 5;
+  if (signTlf) { doc.text(`Tlf: ${signTlf}`, 14, y); y += 5; }
+  if (signEpost) { doc.text(`E-post: ${signEpost}`, 14, y); y += 5; }
+  doc.text(signDato, 14, y);
 
   // ── Tabell ──
   const kolonner = ['Tidsmerke', 'Fornavn', 'Etternavn', 'Ansvarlig skytebaneleder', 'Skytebane'];
   const rader = filtrerteRader.map(r => [
-    r.tidsmerke,
-    r.fornavn,
-    r.etternavn,
-    r.ansvarlig,
-    r.bane,
+    r.tidsmerke, r.fornavn, r.etternavn, r.ansvarlig, r.bane,
   ]);
 
   doc.autoTable({
     head: [kolonner],
     body: rader,
-    startY: 66,
+    startY: y + 6,
     margin: { left: 14, right: 14 },
-    styles: {
-      font: 'helvetica',
-      fontSize: 8,
-      cellPadding: 2.5,
-    },
+    styles: { font: 'helvetica', fontSize: 8, cellPadding: 2.5 },
     headStyles: {
       fillColor: [26, 26, 26],
       textColor: 255,
       fontStyle: 'bold',
       fontSize: 7.5,
     },
-    alternateRowStyles: {
-      fillColor: [240, 237, 232],
-    },
-    didDrawPage: (data) => {
-      // Bunntekst på hver side
+    alternateRowStyles: { fillColor: [240, 237, 232] },
+    didDrawPage: () => {
       const sideNr = doc.internal.getCurrentPageInfo().pageNumber;
       const totalt = doc.internal.getNumberOfPages();
       doc.setFontSize(7.5);
       doc.setTextColor(120);
       doc.setFont('helvetica', 'normal');
-      const naa = new Date().toLocaleString('nb-NO');
-      doc.text(naa, 14, sideH - 8);
+      doc.text(new Date().toLocaleString('nb-NO'), 14, sideH - 8);
       doc.text(`Side ${sideNr} av ${totalt}`, sideW - 14, sideH - 8, { align: 'right' });
       doc.setTextColor(0);
     }
   });
 
-  // ── Last ned ──
   const filnavn = `NOP_treningslogg_${new Date().toISOString().split('T')[0]}.pdf`;
   doc.save(filnavn);
   pdfModal.style.display = 'none';
 }
 
-// ── Konverter logo til base64 for jsPDF ────────────────────────
+// ── Logo til base64 ────────────────────────────────────────────
 function hentLogoBase64() {
   return new Promise((resolve) => {
     const img = new Image();
@@ -290,8 +387,7 @@ function hentLogoBase64() {
       const canvas = document.createElement('canvas');
       canvas.width = img.width;
       canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
+      canvas.getContext('2d').drawImage(img, 0, 0);
       resolve(canvas.toDataURL('image/png'));
     };
     img.onerror = () => resolve(null);

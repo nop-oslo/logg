@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
-  <!-- jsPDF for PDF generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -25,6 +24,15 @@
 
   <main>
     <section class="filter-section">
+
+      <!-- Søknadstype-knapper -->
+      <div class="soknadstype-gruppe">
+        <span class="soknadstype-label">Søknadstype:</span>
+        <button id="btn-handvaapen" class="btn-soknad">🔫 Håndvåpensøknad (6 mnd)</button>
+        <button id="btn-rifle" class="btn-soknad">🎯 Riflesøknad (24 mnd)</button>
+        <button id="btn-alle" class="btn-soknad aktiv">Vis alle</button>
+      </div>
+
       <div class="filter-grid">
         <div class="filter-group">
           <label for="search-navn">Søk etter skytte</label>
@@ -34,6 +42,12 @@
           <label for="filter-bane">Skytebane</label>
           <select id="filter-bane">
             <option value="">Alle baner</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-vaapen">Våpentype</label>
+          <select id="filter-vaapen">
+            <option value="">Alle våpen</option>
           </select>
         </div>
         <div class="filter-group">
@@ -52,12 +66,10 @@
       </div>
     </section>
 
-    <!-- Loading / error state -->
     <div id="status-melding" class="status-melding">
       <span class="spinner"></span> Laster treningsdata…
     </div>
 
-    <!-- Table -->
     <section class="tabell-seksjon" id="tabell-seksjon" style="display:none;">
       <div class="tabell-wrapper">
         <table id="trenings-tabell">
@@ -84,19 +96,45 @@
   <div id="pdf-modal" class="modal-overlay" style="display:none;">
     <div class="modal">
       <h2>Last ned PDF</h2>
-      <p class="modal-sub">Fyll inn godkjenner-informasjon som vil vises i PDF-en.</p>
+      <p class="modal-sub">Velg hvem som godkjenner – feltene fylles automatisk.</p>
+
+      <div class="modal-field">
+        <label>Godkjenner</label>
+        <select id="pdf-signatar">
+          <option value="">– Velg signatar –</option>
+          <option value="0">Leder – Fenr. Tormod Strand</option>
+          <option value="1">Nestleder – Lt. Thor Grannæs</option>
+          <option value="2">Sekretær – Øivind Brekke</option>
+          <option value="3">Kasserer – Fenr. Geir Herdal</option>
+          <option value="4">Banemester – Sondre Nervold</option>
+          <option value="5">1. Styremedlem / Seremonimester – Kapt. Kjetil Edvardsen</option>
+          <option value="6">Oppmann Militær – Lt. Thor Grannæs</option>
+          <option value="7">Oppmann Dynamisk – Oblt. Espen Fiskebeck</option>
+          <option value="8">Oppmann Svartkrutt – Kapt. Arne Thorvaldsen</option>
+        </select>
+      </div>
+
       <div class="modal-field">
         <label>Navn</label>
-        <input type="text" id="pdf-navn" value="Espen Fiskebeck" />
+        <input type="text" id="pdf-navn" placeholder="Velg signatar over…" />
       </div>
       <div class="modal-field">
-        <label>Tittel</label>
-        <input type="text" id="pdf-tittel" value="Oppmann Dynamisk NOP" />
+        <label>Rolle / Tittel</label>
+        <input type="text" id="pdf-tittel" />
+      </div>
+      <div class="modal-field">
+        <label>Telefon</label>
+        <input type="text" id="pdf-tlf" />
+      </div>
+      <div class="modal-field" id="pdf-epost-gruppe" style="display:none;">
+        <label>E-post</label>
+        <input type="text" id="pdf-epost" />
       </div>
       <div class="modal-field">
         <label>Dato</label>
         <input type="date" id="pdf-dato" />
       </div>
+
       <div class="modal-actions">
         <button id="btn-avbryt" class="btn-secondary">Avbryt</button>
         <button id="btn-generer-pdf" class="btn-primary">Generer PDF</button>

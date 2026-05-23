@@ -45,7 +45,6 @@ header {
   width: 80px;
   height: 80px;
   object-fit: contain;
-  filter: invert(1) brightness(0.85);
   flex-shrink: 0;
 }
 
@@ -75,6 +74,49 @@ main {
   padding: 32px 40px;
 }
 
+/* ── Søknadstype-knapper ─────────────── */
+.soknadstype-gruppe {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.soknadstype-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grå-mørk);
+  margin-right: 4px;
+}
+
+.btn-soknad {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 18px;
+  border: 2px solid var(--grå-medium);
+  border-radius: 20px;
+  background: white;
+  color: var(--svart);
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.03em;
+}
+
+.btn-soknad:hover {
+  border-color: var(--svart);
+  background: var(--grå-lys);
+}
+
+.btn-soknad.aktiv {
+  background: var(--svart);
+  color: white;
+  border-color: var(--svart);
+}
+
 /* ── Filter-seksjon ─────────────────── */
 .filter-section {
   background: white;
@@ -87,7 +129,7 @@ main {
 
 .filter-grid {
   display: grid;
-  grid-template-columns: 2fr 2fr 1fr 1fr;
+  grid-template-columns: 2fr 2fr 1fr 1fr 1fr;
   gap: 16px;
   margin-bottom: 18px;
 }
@@ -131,6 +173,12 @@ main {
 .filter-group select:focus {
   outline: none;
   border-color: var(--svart);
+}
+
+.filter-group input:disabled {
+  background: var(--grå-lys);
+  color: var(--grå-mørk);
+  cursor: not-allowed;
 }
 
 .filter-actions {
@@ -290,7 +338,7 @@ tbody td:first-child {
   background: white;
   border-radius: var(--radius);
   padding: 36px 40px;
-  width: 420px;
+  width: 460px;
   max-width: 94vw;
   box-shadow: 0 8px 40px rgba(0,0,0,0.2);
 }
@@ -322,15 +370,27 @@ tbody td:first-child {
   color: var(--grå-mørk);
 }
 
-.modal-field input {
+.modal-field input,
+.modal-field select {
   font-family: 'IBM Plex Sans', sans-serif;
   font-size: 0.9rem;
   padding: 9px 12px;
   border: 1.5px solid var(--grå-lys);
   border-radius: var(--radius);
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.modal-field input:focus {
+.modal-field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  background-color: white;
+}
+
+.modal-field input:focus,
+.modal-field select:focus {
   outline: none;
   border-color: var(--svart);
 }
@@ -353,6 +413,10 @@ footer {
 }
 
 /* ── Responsiv ────────────────────────── */
+@media (max-width: 1100px) {
+  .filter-grid { grid-template-columns: 1fr 1fr 1fr; }
+}
+
 @media (max-width: 900px) {
   header, main { padding-left: 20px; padding-right: 20px; }
   .filter-grid { grid-template-columns: 1fr 1fr; }
