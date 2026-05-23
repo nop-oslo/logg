@@ -1,0 +1,365 @@
+/* ===========================
+   NOP Treningslogg – stil
+   =========================== */
+
+:root {
+  --svart: #111111;
+  --hvit: #f5f4f0;
+  --grå-lys: #e8e6e0;
+  --grå-medium: #c8c4bc;
+  --grå-mørk: #555;
+  --aksent: #1a1a1a;
+  --tabell-header: #1a1a1a;
+  --tabell-stripe: #f0ede8;
+  --radius: 4px;
+  --skygge: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--hvit);
+  color: var(--svart);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ─────────────────────────── */
+header {
+  background: var(--svart);
+  padding: 24px 40px;
+  border-bottom: 3px solid #333;
+}
+
+.header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: invert(1) brightness(0.85);
+  flex-shrink: 0;
+}
+
+.header-text h1 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #f0ede8;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.header-text .subtitle {
+  font-size: 0.85rem;
+  color: var(--grå-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* ── Main ────────────────────────────── */
+main {
+  flex: 1;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 40px;
+}
+
+/* ── Filter-seksjon ─────────────────── */
+.filter-section {
+  background: white;
+  border: 1px solid var(--grå-lys);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--skygge);
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grå-mørk);
+}
+
+.filter-group input,
+.filter-group select {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.9rem;
+  padding: 9px 12px;
+  border: 1.5px solid var(--grå-lys);
+  border-radius: var(--radius);
+  background: var(--hvit);
+  color: var(--svart);
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.filter-group select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: var(--svart);
+}
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.treff-info {
+  font-size: 0.82rem;
+  color: var(--grå-mørk);
+  font-family: 'IBM Plex Mono', monospace;
+  flex: 1;
+}
+
+/* ── Knapper ──────────────────────────── */
+.btn-primary,
+.btn-secondary {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 9px 20px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--svart);
+  color: var(--hvit);
+}
+
+.btn-primary:hover {
+  background: #333;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--grå-lys);
+  color: var(--svart);
+}
+
+.btn-secondary:hover {
+  background: var(--grå-medium);
+}
+
+/* ── Status ───────────────────────────── */
+.status-melding {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--grå-mørk);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--grå-medium);
+  border-top-color: var(--svart);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Tabell ───────────────────────────── */
+.tabell-seksjon {
+  background: white;
+  border: 1px solid var(--grå-lys);
+  border-radius: var(--radius);
+  box-shadow: var(--skygge);
+  overflow: hidden;
+}
+
+.tabell-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+thead tr {
+  background: var(--tabell-header);
+  color: var(--hvit);
+}
+
+thead th {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 13px 14px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--grå-lys);
+  transition: background 0.1s;
+}
+
+tbody tr:nth-child(even) {
+  background: var(--tabell-stripe);
+}
+
+tbody tr:hover {
+  background: #e2dfd9;
+}
+
+tbody td {
+  padding: 11px 14px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+tbody td:first-child {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--grå-mørk);
+}
+
+.ingen-treff {
+  text-align: center;
+  padding: 48px;
+  color: var(--grå-mørk);
+  font-size: 0.9rem;
+}
+
+/* ── Modal ────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: white;
+  border-radius: var(--radius);
+  padding: 36px 40px;
+  width: 420px;
+  max-width: 94vw;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+}
+
+.modal h2 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+
+.modal-sub {
+  font-size: 0.85rem;
+  color: var(--grå-mørk);
+  margin-bottom: 24px;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+
+.modal-field label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--grå-mørk);
+}
+
+.modal-field input {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.9rem;
+  padding: 9px 12px;
+  border: 1.5px solid var(--grå-lys);
+  border-radius: var(--radius);
+}
+
+.modal-field input:focus {
+  outline: none;
+  border-color: var(--svart);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* ── Footer ───────────────────────────── */
+footer {
+  background: var(--svart);
+  color: var(--grå-medium);
+  text-align: center;
+  padding: 16px 40px;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+/* ── Responsiv ────────────────────────── */
+@media (max-width: 900px) {
+  header, main { padding-left: 20px; padding-right: 20px; }
+  .filter-grid { grid-template-columns: 1fr 1fr; }
+  .header-text h1 { font-size: 1rem; }
+}
+
+@media (max-width: 560px) {
+  .filter-grid { grid-template-columns: 1fr; }
+  .logo { width: 56px; height: 56px; }
+}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOP – Organisert Treningslogg</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <!-- jsPDF for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <img src="NOP_Logo.png" alt="NOP Logo" class="logo" />
+      <div class="header-text">
+        <h1>Norske Offiserers Pistolklubb</h1>
+        <p class="subtitle">Organisert treningslogg</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="filter-section">
+      <div class="filter-grid">
+        <div class="filter-group">
+          <label for="search-navn">Søk etter skytte</label>
+          <input type="text" id="search-navn" placeholder="Fornavn eller etternavn…" />
+        </div>
+        <div class="filter-group">
+          <label for="filter-bane">Skytebane</label>
+          <select id="filter-bane">
+            <option value="">Alle baner</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-fra">Fra dato</label>
+          <input type="date" id="filter-fra" />
+        </div>
+        <div class="filter-group">
+          <label for="filter-til">Til dato</label>
+          <input type="date" id="filter-til" />
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button id="btn-nullstill" class="btn-secondary">Nullstill filter</button>
+        <span id="treff-info" class="treff-info"></span>
+        <button id="btn-pdf" class="btn-primary">⬇ Last ned PDF</button>
+      </div>
+    </section>
+
+    <!-- Loading / error state -->
+    <div id="status-melding" class="status-melding">
+      <span class="spinner"></span> Laster treningsdata…
+    </div>
+
+    <!-- Table -->
+    <section class="tabell-seksjon" id="tabell-seksjon" style="display:none;">
+      <div class="tabell-wrapper">
+        <table id="trenings-tabell">
+          <thead>
+            <tr>
+              <th>Tidsmerke</th>
+              <th>Fornavn</th>
+              <th>Etternavn</th>
+              <th>Ansvarlig skytebaneleder</th>
+              <th>Skytebane</th>
+              <th>Våpen</th>
+              <th>Kaliber</th>
+              <th>Antall skudd</th>
+              <th>Treningsform</th>
+            </tr>
+          </thead>
+          <tbody id="tabell-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- PDF modal -->
+  <div id="pdf-modal" class="modal-overlay" style="display:none;">
+    <div class="modal">
+      <h2>Last ned PDF</h2>
+      <p class="modal-sub">Fyll inn godkjenner-informasjon som vil vises i PDF-en.</p>
+      <div class="modal-field">
+        <label>Navn</label>
+        <input type="text" id="pdf-navn" value="Espen Fiskebeck" />
+      </div>
+      <div class="modal-field">
+        <label>Tittel</label>
+        <input type="text" id="pdf-tittel" value="Oppmann Dynamisk NOP" />
+      </div>
+      <div class="modal-field">
+        <label>Dato</label>
+        <input type="date" id="pdf-dato" />
+      </div>
+      <div class="modal-actions">
+        <button id="btn-avbryt" class="btn-secondary">Avbryt</button>
+        <button id="btn-generer-pdf" class="btn-primary">Generer PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>NOP – Norske Offiserers Pistolklubb &nbsp;|&nbsp; Data hentet fra Google Sheets</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
