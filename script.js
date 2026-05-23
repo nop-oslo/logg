@@ -3,7 +3,7 @@
 //  Erstatt APPS_SCRIPT_URL med URL-en til ditt Google Apps Script
 // =============================================================
 
-const APPS_SCRIPT_URL = 'DIN_APPS_SCRIPT_URL_HER';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwlvT2OGBj8GsT_RAPH-51bW3T_NGlO5Rk2qCkbk5nLCr0jjVU-cgr0eVf8aHxk5Bi-/exec';
 
 // ── State ─────────────────────────────────────────────────────
 let alleRader = [];
