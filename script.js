@@ -326,6 +326,13 @@ function oppdaterSoknadKnapper() {
 
 // ── PDF-generering ─────────────────────────────────────────────
 async function genererPDF() {
+  // Vis spinner på knappen
+  btnGenererPdf.disabled = true;
+  btnGenererPdf.innerHTML = '<span class="pdf-spinner"></span> Genererer…';
+
+  // Liten delay så UI rekker å oppdatere seg
+  await new Promise(r => setTimeout(r, 50));
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
@@ -420,6 +427,10 @@ async function genererPDF() {
   const filnavn = `NOP_treningslogg_${new Date().toISOString().split('T')[0]}.pdf`;
   doc.save(filnavn);
   pdfModal.style.display = 'none';
+
+  // Tilbakestill knappen
+  btnGenererPdf.disabled = false;
+  btnGenererPdf.innerHTML = 'Generer PDF';
 }
 
 // ── Logo til base64 ────────────────────────────────────────────
