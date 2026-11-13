@@ -49,6 +49,9 @@ const pdfEpostGruppe= document.getElementById('pdf-epost-gruppe');
 const pdfDato       = document.getElementById('pdf-dato');
 const btnAvbryt     = document.getElementById('btn-avbryt');
 const btnGenererPdf = document.getElementById('btn-generer-pdf');
+const pdfSignaturFil = document.getElementById('pdf-signatur-fil');
+const pdfSignaturFilGruppe = document.getElementById('pdf-signatur-fil-gruppe');
+let signaturData = null;
 
 const btnHandvaapen = document.getElementById('btn-handvaapen');
 const btnRifle      = document.getElementById('btn-rifle');
@@ -294,6 +297,8 @@ function bindListeners() {
   // Signatar-dropdown fyller feltene automatisk
   pdfSignatur.addEventListener('change', () => {
     const idx = pdfSignatur.value;
+    const egenBruker = sessionStorage.getItem('nop_bruker') === 'Espen';
+    pdfSignaturFilGruppe.style.display = idx === '7' && egenBruker ? '' : 'none';
     if (idx === '') {
       pdfNavn.value = '';
       pdfTittel.value = '';
@@ -315,6 +320,22 @@ function bindListeners() {
     }
   });
 
+  pdfSignaturFil.addEventListener('change', async () => {
+    signaturData = null;
+    const fil = pdfSignaturFil.files?.[0];
+    if (!fil) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(fil.type) || fil.size > 2 * 1024 * 1024) {
+      alert('Velg et PNG-, JPEG- eller WebP-bilde under 2 MB.');
+      pdfSignaturFil.value = '';
+      return;
+    }
+    signaturData = await new Promise((resolve, reject) => {
+      const leser = new FileReader();
+      leser.onload = () => resolve(leser.result);
+      leser.onerror = reject;
+      leser.readAsDataURL(fil);
+    });
+  });
   btnGenererPdf.addEventListener('click', genererPDF);
 }
 
@@ -379,6 +400,29 @@ async function genererPDF() {
   doc.setDrawColor(60);
   doc.setLineWidth(0.5);
   doc.line(14, 52, 90, 52);
+
+  // Håndskrevet signatur legges bare til etter at Espen selv har valgt en lokal fil.
+  // Filen lastes aldri opp eller lagres i GitHub. Dette er ikke en digital signatur.
+  if (pdfSignatur.value === '7' &&
+      sessionStorage.getItem('nop_bruker') === 'Espen' &&
+      signaturData) {
+    try {
+      const bilde = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = signaturData;
+      });
+      const bredde = 70;
+      const hoyde = Math.min(17, bredde * bilde.naturalHeight / bilde.naturalWidth);
+      const format = signaturData.startsWith('data:image/jpeg') ? 'JPEG' :
+                     signaturData.startsWith('data:image/webp') ? 'WEBP' : 'PNG';
+      doc.addImage(signaturData, format, 16, 51 - hoyde, bredde, hoyde);
+    } catch (err) {
+      console.error('Kunne ikke sette inn signaturbildet:', err);
+      alert('Signaturbildet kunne ikke legges inn. PDF-en lages uten signatur.');
+    }
+  }
 
   // Navn starter 6mm under streken
   let y = 60;
