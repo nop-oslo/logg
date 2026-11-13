@@ -408,12 +408,12 @@ async function genererPDF() {
   // ── Godkjenner-tekst ──
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text('Oversikt over organisert trening som bekreftes og godkjennes av NOP', 14, 42);
+  // Godkjennerfeltet har eget område; unngå forklaringstekst bak signatur/stempel.
 
   // ── Signaturlinje (med luft over navnet) ──
   doc.setDrawColor(60);
   doc.setLineWidth(0.5);
-  doc.line(14, 85, 90, 85);
+  doc.line(14, 80, 90, 80);
 
   // Håndskrevet signatur legges bare til etter at Espen selv har valgt en lokal fil.
   // Filen lastes aldri opp eller lagres i GitHub. Dette er ikke en digital signatur.
@@ -446,14 +446,14 @@ async function genererPDF() {
       }
       ctx.putImageData(pixels, 0, 0);
       const png = canvas.toDataURL('image/png');
-      const maksBredde = 72;
-      const maksHoyde = 23;
+      const maksBredde = 70;
+      const maksHoyde = 25;
       const skala = Math.min(maksBredde / canvas.width, maksHoyde / canvas.height);
       const bredde = canvas.width * skala;
       const hoyde = canvas.height * skala;
       // Signaturfeltet er adskilt fra forklaringsteksten (y=42).
       // Bruk hele bildeflaten med bevart sideforhold og plasser rett over linjen.
-      doc.addImage(png, 'PNG', 16, 83 - hoyde, bredde, hoyde);
+      doc.addImage(png, 'PNG', 16, 78 - hoyde, bredde, hoyde);
     } catch (err) {
       console.error('Kunne ikke sette inn signaturbildet:', err);
       alert('Signaturbildet kunne ikke legges inn. PDF-en lages uten signatur.');
@@ -461,7 +461,7 @@ async function genererPDF() {
   }
 
   // Navn starter 6mm under streken
-  let y = 93;
+  let y = 88;
   doc.setFont('helvetica', 'bold');
   doc.text(signNavn, 14, y);
 
