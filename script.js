@@ -413,7 +413,7 @@ async function genererPDF() {
   // ── Signaturlinje (med luft over navnet) ──
   doc.setDrawColor(60);
   doc.setLineWidth(0.5);
-  doc.line(14, 67, 90, 67);
+  doc.line(14, 85, 90, 85);
 
   // Håndskrevet signatur legges bare til etter at Espen selv har valgt en lokal fil.
   // Filen lastes aldri opp eller lagres i GitHub. Dette er ikke en digital signatur.
@@ -446,12 +446,14 @@ async function genererPDF() {
       }
       ctx.putImageData(pixels, 0, 0);
       const png = canvas.toDataURL('image/png');
-      const maksBredde = 76;
-      const maksHoyde = 19;
+      const maksBredde = 72;
+      const maksHoyde = 23;
       const skala = Math.min(maksBredde / canvas.width, maksHoyde / canvas.height);
       const bredde = canvas.width * skala;
       const hoyde = canvas.height * skala;
-      doc.addImage(png, 'PNG', 14, 66 - hoyde, bredde, hoyde);
+      // Signaturfeltet er adskilt fra forklaringsteksten (y=42).
+      // Bruk hele bildeflaten med bevart sideforhold og plasser rett over linjen.
+      doc.addImage(png, 'PNG', 16, 83 - hoyde, bredde, hoyde);
     } catch (err) {
       console.error('Kunne ikke sette inn signaturbildet:', err);
       alert('Signaturbildet kunne ikke legges inn. PDF-en lages uten signatur.');
@@ -459,7 +461,7 @@ async function genererPDF() {
   }
 
   // Navn starter 6mm under streken
-  let y = 75;
+  let y = 93;
   doc.setFont('helvetica', 'bold');
   doc.text(signNavn, 14, y);
 
