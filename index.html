@@ -145,6 +145,12 @@
         <input type="date" id="pdf-dato" />
       </div>
 
+      <div class="modal-field" id="pdf-signatur-fil-gruppe" style="display:none;">
+        <label for="pdf-signatur-fil">Din håndskrevne signatur (PNG/JPEG/WebP)</label>
+        <input type="file" id="pdf-signatur-fil" accept="image/png,image/jpeg,image/webp" />
+        <small>Velg signaturbildet fra din enhet. Bildet brukes bare lokalt i denne økten og sendes ikke til GitHub. Innloggingen gir foreløpig ikke sikker identitetskontroll.</small>
+      </div>
+
       <div class="modal-actions">
         <button id="btn-avbryt" class="btn-secondary">Avbryt</button>
         <button id="btn-generer-pdf" class="btn-primary">Generer PDF</button>
