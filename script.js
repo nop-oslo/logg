@@ -413,7 +413,7 @@ async function genererPDF() {
   // ── Signaturlinje (med luft over navnet) ──
   doc.setDrawColor(60);
   doc.setLineWidth(0.5);
-  doc.line(14, 52, 90, 52);
+  doc.line(14, 67, 90, 67);
 
   // Håndskrevet signatur legges bare til etter at Espen selv har valgt en lokal fil.
   // Filen lastes aldri opp eller lagres i GitHub. Dette er ikke en digital signatur.
@@ -427,11 +427,31 @@ async function genererPDF() {
         img.onerror = reject;
         img.src = signaturData;
       });
-      const bredde = 70;
-      const hoyde = Math.min(17, bredde * bilde.naturalHeight / bilde.naturalWidth);
-      const format = signaturData.startsWith('data:image/jpeg') ? 'JPEG' :
-                     signaturData.startsWith('data:image/webp') ? 'WEBP' : 'PNG';
-      doc.addImage(signaturData, format, 16, 51 - hoyde, bredde, hoyde);
+      // Fjern hvit/nesten hvit bakgrunn og bevar originalt sideforhold.
+      // Behandle kun lysnøytrale piksler slik at blått blekk beholdes.
+      const canvas = document.createElement('canvas');
+      canvas.width = bilde.naturalWidth;
+      canvas.height = bilde.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(bilde, 0, 0);
+      const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < pixels.data.length; i += 4) {
+        const r = pixels.data[i], g = pixels.data[i + 1], b = pixels.data[i + 2];
+        const min = Math.min(r, g, b);
+        // Hvit og nesten hvit bakgrunn blir transparent; bevar farget stempel.
+        if (min > 235 && Math.max(r, g, b) - min < 18) {
+          const faktor = Math.max(0, Math.min(1, (255 - min) / 20));
+          pixels.data[i + 3] = Math.round(pixels.data[i + 3] * faktor);
+        }
+      }
+      ctx.putImageData(pixels, 0, 0);
+      const png = canvas.toDataURL('image/png');
+      const maksBredde = 76;
+      const maksHoyde = 19;
+      const skala = Math.min(maksBredde / canvas.width, maksHoyde / canvas.height);
+      const bredde = canvas.width * skala;
+      const hoyde = canvas.height * skala;
+      doc.addImage(png, 'PNG', 14, 66 - hoyde, bredde, hoyde);
     } catch (err) {
       console.error('Kunne ikke sette inn signaturbildet:', err);
       alert('Signaturbildet kunne ikke legges inn. PDF-en lages uten signatur.');
@@ -439,7 +459,7 @@ async function genererPDF() {
   }
 
   // Navn starter 6mm under streken
-  let y = 60;
+  let y = 75;
   doc.setFont('helvetica', 'bold');
   doc.text(signNavn, 14, y);
 
