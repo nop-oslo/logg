@@ -298,7 +298,13 @@ function bindListeners() {
   pdfSignatur.addEventListener('change', () => {
     const idx = pdfSignatur.value;
     const egenBruker = sessionStorage.getItem('nop_bruker') === 'Espen';
-    pdfSignaturFilGruppe.style.display = idx === '7' && egenBruker ? '' : 'none';
+    pdfSignaturFilGruppe.style.display = '';
+    pdfSignaturFil.disabled = !(idx === '7' && egenBruker);
+    document.getElementById('pdf-signatur-hjelp').textContent = !egenBruker
+      ? 'Signaturbildet kan bare velges i en økt innlogget som Espen.'
+      : idx !== '7'
+        ? 'Velg Oppmann Dynamisk – Oblt. Espen Fiskebeck for å aktivere opplasting.'
+        : 'Velg signaturbildet ditt. Det brukes kun i nettleseren og lagres ikke på GitHub.';
     if (idx === '') {
       pdfNavn.value = '';
       pdfTittel.value = '';
@@ -336,6 +342,8 @@ function bindListeners() {
       leser.readAsDataURL(fil);
     });
   });
+  pdfSignaturFilGruppe.style.display = '';
+  pdfSignaturFil.disabled = true;
   btnGenererPdf.addEventListener('click', genererPDF);
 }
 
@@ -347,6 +355,12 @@ function oppdaterSoknadKnapper() {
 
 // ── PDF-generering ─────────────────────────────────────────────
 async function genererPDF() {
+  if (pdfSignatur.value === '7' &&
+      sessionStorage.getItem('nop_bruker') === 'Espen' &&
+      !signaturData) {
+    const fortsett = confirm('Du har valgt Espen som godkjenner, men har ikke valgt signaturbildet. Vil du lage PDF uten håndskrevet signatur?');
+    if (!fortsett) return;
+  }
   // Vis spinner på knappen
   btnGenererPdf.disabled = true;
   btnGenererPdf.innerHTML = '<span class="pdf-spinner"></span> Genererer…';
